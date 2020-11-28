@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <bytecodeTargetLevel target="11">
+      <module name="io.warren.account.main" target="11" />
+      <module name="io.warren.account.test" target="11" />
+      <module name="warren-back.main" target="11" />
+      <module name="warren-back.test" target="11" />
+      <module name="warren.warren-back.main" target="11" />
+      <module name="warren.warren-back.test" target="11" />
+    </bytecodeTargetLevel>
+  </component>
+</project>
