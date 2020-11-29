@@ -34,7 +34,7 @@ class TransactionsService {
             amount = request.amount!!,
             type = request.type!!,
             sourceAccountId = request.sourceAccountId,
-            destinationAccountId = request.destinationAccountId!!
+            destinationAccountId = request.destinationAccountId
         )
 
         if (transaction.destinationAccountId == transaction.sourceAccountId) {
@@ -46,8 +46,9 @@ class TransactionsService {
 
         return when (transaction.type) {
             TransactionTypeEnum.DEPOSIT -> deposit(transaction)
-            TransactionTypeEnum.PAYMENT -> payment(transaction)
-            TransactionTypeEnum.WITHDRAWAL -> withdrawal(transaction)
+            TransactionTypeEnum.TRANSFER -> transfer(transaction)
+            TransactionTypeEnum.PAYMENT -> withdrawalOrPayment(transaction)
+            TransactionTypeEnum.WITHDRAWAL -> withdrawalOrPayment(transaction)
         }
     }
 
@@ -56,11 +57,11 @@ class TransactionsService {
             .map { transactionConverter!!.convert(it) }
     }
 
-    private fun payment(transaction: Transaction): Mono<TransactionDto> {
+    private fun transfer(transaction: Transaction): Mono<TransactionDto> {
         val sourceAccountMono =
             accountsService!!.getSubtractAccountBalance(transaction.sourceAccountId.toString(), transaction.amount)
         val destinationAccountMono = accountsService!!.getAddAccountAvailableBalance(
-            transaction.destinationAccountId.toHexString(),
+            transaction.destinationAccountId!!.toHexString(),
             transaction.amount
         )
 
@@ -73,14 +74,13 @@ class TransactionsService {
                     it.save(sourceAccount)
                         .then(it.save(destinationAccount))
                         .then(it.insert(transaction))
-                        .then(it.insert(transaction))
                 }
                     .map { transactionConverter!!.convert(it) }
                     .next()
             }
     }
 
-    private fun withdrawal(transaction: Transaction): Mono<TransactionDto> {
+    private fun withdrawalOrPayment(transaction: Transaction): Mono<TransactionDto> {
         return accountsService!!.getSubtractAccountBalance(
             transaction.sourceAccountId.toString(),
             transaction.amount
