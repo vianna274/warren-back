@@ -15,7 +15,7 @@ data class Transaction (
 
     val amount: BigDecimal,
     val sourceAccountId: ObjectId?,
-    val destinationAccountId: ObjectId,
+    val destinationAccountId: ObjectId?,
     val type: TransactionTypeEnum,
     val createdDate: LocalDateTime = LocalDateTime.now(),
     val modifiedDate: LocalDateTime = LocalDateTime.now()

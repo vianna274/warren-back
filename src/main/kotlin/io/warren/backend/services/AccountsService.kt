@@ -3,17 +3,15 @@ package io.warren.backend.services
 import io.warren.backend.converters.AccountConverter
 import io.warren.backend.converters.TransactionConverter
 import io.warren.backend.dtos.AccountDto
-import io.warren.backend.dtos.TransactionDto
+import io.warren.backend.dtos.AccountOption
 import io.warren.backend.entities.Account
 import io.warren.backend.entities.AccountRequest
-import io.warren.backend.entities.TransactionRequest
 import io.warren.backend.repositories.AccountRepository
 import io.warren.backend.repositories.TransactionsRepository
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
 import org.springframework.web.server.ResponseStatusException
-import org.springframework.web.server.ServerWebInputException
 import reactor.core.publisher.Flux
 import reactor.core.publisher.Mono
 import reactor.kotlin.core.publisher.switchIfEmpty
@@ -33,6 +31,11 @@ class AccountsService {
 
     @Autowired
     private val transactionConverter: TransactionConverter? = null
+
+    fun findAllAccounts(): Flux<AccountOption> {
+        return accountsRepository!!.findAll()
+            .map { accountConverter!!.convertToSummary(it) }
+    }
 
     fun createAccount(request: AccountRequest): Mono<AccountDto> {
         accountsRepository!!.findAccountByUsername(request.username!!)

@@ -9,7 +9,6 @@ class TransactionRequest (
     @get:NotNull(message = "amount cant be empty")
     val amount: BigDecimal?,
     val sourceAccountId: ObjectId?,
-    @get:NotNull
     val destinationAccountId: ObjectId?,
     @get:NotNull
     val type: TransactionTypeEnum?
