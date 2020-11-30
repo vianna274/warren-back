@@ -38,22 +38,23 @@ class AccountsService {
     }
 
     fun createAccount(request: AccountRequest): Mono<AccountDto> {
-        accountsRepository!!.findAccountByUsername(request.username!!)
-            .collectList()
-            .flatMap { accounts ->
-                if (accounts.size > 1) {
-                    throw ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Já existe uma conta com esse username")
-                }
-                Mono.just(accounts)
-            }
-
         val account = Account(
             customerName = request.customerName!!,
             type = request.type!!,
             username = request.username!!
         )
 
-        return accountsRepository!!.save(account)
+        return accountsRepository!!.findAllByUsername(request.username.orEmpty())
+            .collectList()
+            .flatMap {
+                if (it.size > 0) {
+                    throw ResponseStatusException(
+                        HttpStatus.UNPROCESSABLE_ENTITY,
+                        "Já existe uma conta com esse username"
+                    )
+                }
+                accountsRepository!!.save(account)
+            }
             .map { accountConverter!!.convert(it) }
     }
 
@@ -63,7 +64,7 @@ class AccountsService {
     }
 
     fun getAccountByUsername(username: String): Mono<AccountDto> {
-        val accounts = accountsRepository!!.findAccountByUsername(username)
+        return accountsRepository!!.findAllByUsername(username)
             .map { accountConverter!!.convert(it) }
             .collectList()
             .flatMap { accounts ->
@@ -72,13 +73,14 @@ class AccountsService {
                 }
 
                 if (accounts.size > 1) {
-                    throw ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Há mais de uma conta para esse username")
+                    throw ResponseStatusException(
+                        HttpStatus.UNPROCESSABLE_ENTITY,
+                        "Há mais de uma conta para esse username"
+                    )
                 }
 
                 Mono.just(accounts[0])
             }
-
-        return accounts
     }
 
     fun getAddAccountAvailableBalance(accountId: String, amount: BigDecimal): Mono<Account> {
@@ -100,11 +102,17 @@ class AccountsService {
         val account = accountsRepository!!.findById(accountId)
             .filter { it.availableBalance - amount >= BigDecimal.ZERO }
             .switchIfEmpty {
-                throw ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Não há saldo suficiente para realizar a operação.")
+                throw ResponseStatusException(
+                    HttpStatus.UNPROCESSABLE_ENTITY,
+                    "Não há saldo suficiente para realizar a operação."
+                )
             }
             .map {
                 if (it.availableBalance - amount < BigDecimal.ZERO) {
-                    throw ResponseStatusException(HttpStatus.UNPROCESSABLE_ENTITY, "Não há saldo suficiente para realizar a operação.")
+                    throw ResponseStatusException(
+                        HttpStatus.UNPROCESSABLE_ENTITY,
+                        "Não há saldo suficiente para realizar a operação."
+                    )
                 }
 
                 Account(

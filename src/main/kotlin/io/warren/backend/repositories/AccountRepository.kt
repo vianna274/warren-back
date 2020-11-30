@@ -7,5 +7,5 @@ import reactor.core.publisher.Flux
 
 @Repository
 interface AccountRepository : ReactiveMongoRepository<Account, String> {
-    fun findAccountByUsername(username: String): Flux<Account>
+    fun findAllByUsername(username: String): Flux<Account>
 }
